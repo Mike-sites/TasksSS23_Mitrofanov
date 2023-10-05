@@ -1,47 +1,102 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+
+  let baseCurrency = 'USD';
+  let targetCurrency = 'EUR';
+  let amount = 0;
+  let convertedAmount = 0;
+  let exchangeRate = 0;
+
+  function updateExchangeRate() {
+    fetch(`https://v6.exchangerate-api.com/v6/86e8b164ca4e6fb948bab443/latest/${baseCurrency}`)
+      .then(response => response.json())
+      .then(data => {
+        exchangeRate = data.conversion_rates[targetCurrency];
+        convertCurrency();
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  function convertCurrency() {
+    convertedAmount = amount * exchangeRate;
+  }
+  
+  function handleBaseCurrencyChange(event) {
+    baseCurrency = event.target.value;
+    updateExchangeRate();
+  }
+  
+  function handleTargetCurrencyChange(event) {
+    targetCurrency = event.target.value;
+    updateExchangeRate();
+  }
+  
+  function handleAmountChange(event) {
+    amount = parseFloat(event.target.value);
+    convertCurrency();
+  }
 </script>
 
+
 <main>
+  <h1>Конвертер Валют</h1>
+  
   <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
+    <label for="base-currency">ИЗ:</label>
+    <select id="base-currency" on:change={handleBaseCurrencyChange}>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">AED</option>
+   
+    </select>
   </div>
-  <h1>Vite + Svelte</h1>
+  
+  <div>
+    <label for="target-currency">В:</label>
+    <select id="target-currency" on:change={handleTargetCurrencyChange}>
+      <option value="EUR">EUR</option>
+      <option value="USD">USD</option>
+      <option value="GBP">AED</option>
 
-  <div class="card">
-    <Counter />
+    </select>
   </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+  
+  <div>
+    <label for="amount">Сумма:</label>
+    <input type="number" id="amount" bind:value={amount} on:input={handleAmountChange} />
+  </div>
+  
+  <div>
+    <label for="converted-amount">Конвертированная сумма:</label>
+    <input type="text" id="converted-amount" readonly value={convertedAmount.toFixed(2)} />
+  </div>
 </main>
-
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+    font-family: Arial, sans-serif;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+  
+  h1 {
+    text-align: center;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+  
+  div {
+    margin: 10px 0;
   }
-  .read-the-docs {
-    color: #888;
+  
+  label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  select,
+  input {
+    padding: 5px;
   }
 </style>
+
